@@ -8,6 +8,11 @@ class PouringService {
       return false;
     }
 
+    // заблокированная (собранная) колба недоступна для действий
+    if (from.isComplete || to.isComplete) {
+      return false;
+    }
+
     // нельзя переливать в заполненную
     if (!to.hasSpace) {
       return false;

@@ -10,9 +10,7 @@ class FlaskPainter extends CustomPainter {
     final width = size.width;
     final height = size.height;
 
-    final strokeColor = selected
-        ? Colors.amber
-        : Colors.white.withAlpha((0.65 * 255).round());
+    final strokeColor = selected ? Colors.amber : Colors.blueGrey.shade400;
 
     final paint = Paint()
       ..style = PaintingStyle.stroke
@@ -23,7 +21,7 @@ class FlaskPainter extends CustomPainter {
 
     final glassFill = Paint()
       ..style = PaintingStyle.fill
-      ..color = Colors.white.withAlpha((0.08 * 255).round());
+      ..color = Colors.blueGrey.withAlpha((0.06 * 255).round());
 
     final path = Path();
 
@@ -84,7 +82,7 @@ class FlaskPainter extends CustomPainter {
 
     // Горлышко
     final neckPaint = Paint()
-      ..color = Colors.white.withAlpha((0.5 * 255).round())
+      ..color = Colors.blueGrey.shade300
       ..strokeWidth = 2
       ..style = PaintingStyle.stroke;
 

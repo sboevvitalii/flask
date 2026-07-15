@@ -9,23 +9,29 @@ class LevelGenerator {
   static PuzzleEntity generate({required int difficulty}) {
     final random = Random();
 
-    // количество цветов растёт со сложностью, но не больше, чем есть в палитре
     final maxColors = min(GameConfig.maxColors, GameColors.palette.length);
-    final colorCount = (difficulty + 2).clamp(3, maxColors);
 
-    // сколько ДОПОЛНИТЕЛЬНЫХ заполненных колб добавить сверх числа цветов —
-    // тот же объём жидкости размазывается по большему числу колб,
-    // усложняя уровень даже когда colorCount уже упёрся в потолок палитры
-    final extraFlasks = (difficulty ~/ 2).clamp(0, 4);
+    final colorCount = (3 + (difficulty - 1) ~/ 3).clamp(3, maxColors);
 
+    final maxExtraFlasks = max(
+      0,
+      GameConfig.maxTotalFlasks - GameConfig.emptyFlasks - maxColors,
+    );
+
+    final extraFlasks = (difficulty ~/ 3).clamp(0, maxExtraFlasks);
     final filledFlaskCount = colorCount + extraFlasks;
-
     final colors = GameColors.palette.take(colorCount).toList();
+    final baseQuads = filledFlaskCount ~/ colorCount;
+    final remainderQuads = filledFlaskCount % colorCount;
     final allLayers = <ColorEntity>[];
 
     for (int i = 0; i < colorCount; i++) {
-      for (int j = 0; j < 4; j++) {
-        allLayers.add(ColorEntity(colors[i]));
+      final quads = baseQuads + (i < remainderQuads ? 1 : 0);
+
+      for (int q = 0; q < quads; q++) {
+        for (int layer = 0; layer < GameConfig.flaskCapacity; layer++) {
+          allLayers.add(ColorEntity(colors[i]));
+        }
       }
     }
 
@@ -33,29 +39,18 @@ class LevelGenerator {
 
     final flasks = <FlaskEntity>[];
 
-    // распределяем все слои по filledFlaskCount колбам максимально равномерно.
-    // ни одна колба не превысит capacity, т.к. filledFlaskCount >= colorCount
-    final totalUnits = allLayers.length;
-    final baseSize = totalUnits ~/ filledFlaskCount;
-    final remainder = totalUnits % filledFlaskCount;
-
-    int cursor = 0;
-
     for (int i = 0; i < filledFlaskCount; i++) {
-      final size = baseSize + (i < remainder ? 1 : 0);
+      final start = i * GameConfig.flaskCapacity;
 
       flasks.add(
         FlaskEntity(
           id: i,
           capacity: GameConfig.flaskCapacity,
-          layers: allLayers.sublist(cursor, cursor + size),
+          layers: allLayers.sublist(start, start + GameConfig.flaskCapacity),
         ),
       );
-
-      cursor += size;
     }
 
-    // пустые колбы — количество всегда фиксировано, не зависит от сложности
     for (int i = 0; i < GameConfig.emptyFlasks; i++) {
       flasks.add(
         FlaskEntity.empty(
